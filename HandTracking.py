@@ -11,26 +11,28 @@ class HandDetector:
         self.trackCon = trackCon
 
         self.mpHands = mp.solutions.hands
-        self.hands = self.mpHands.Hands(
-            self.mode, self.maxHands, self.detectionCon, self.trackCon
-        )
+        self.hands = self.mpHands.Hands()
         self.mpDraw = mp.solutions.drawing_utils
 
+    def findHands(self, img, draw=True):
+        imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        results = self.hands.process(imgRGB)
+        # print(results.multi_hand_landmarks)
 
-imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-results = hands.process(imgRGB)
-# print(results.multi_hand_landmarks)
+        if results.multi_hand_landmarks:
+            for handLms in results.multi_hand_landmarks:
+                if draw:
+                    self.mpDraw.draw_landmarks(
+                        img, handLms, self.mpHands.HAND_CONNECTIONS
+                    )
+    
+        return img
 
-if results.multi_hand_landmarks:
-    for handLms in results.multi_hand_landmarks:
-        for id, lm in enumerate(handLms.landmark):
-            # print(id, lm)
-            h, w, c = img.shape
-            cx, cy = int(lm.x * w), int(lm.y * h)
-            print(id, cx, cy)
-
-        mpDraw.draw_landmarks(img, handLms, mpHands.HAND_CONNECTIONS)
-
+                # for id, lm in enumerate(handLms.landmark):
+                #     # print(id, lm)
+                #     h, w, c = img.shape
+                #     cx, cy = int(lm.x * w), int(lm.y * h)
+                #     print(id, cx, cy)
 
 def main():
     pTime = 0
@@ -38,9 +40,11 @@ def main():
 
     cap = cv2.VideoCapture(0)
 
+    detector = HandDetector()
+
     while True:
         success, img = cap.read()
-
+        img = detector.findHands(img)
         cTime = time.time()
         fps = 1 / (cTime - pTime)
         pTime = cTime
@@ -50,13 +54,8 @@ def main():
         )
 
         cv2.imshow("Image", img)
-        key = cv2.waitKey(1)
-        if key == 27:
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
+        key = cv2.waitKey(1)   
 
 
-if __name__ == "__name__":
+if __name__ == "__main__":
     main()
