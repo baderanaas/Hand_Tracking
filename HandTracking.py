@@ -3,9 +3,18 @@ import mediapipe as mp
 import time
 
 
-mpHands = mp.solutions.hands
-hands = mpHands.Hands()
-mpDraw = mp.solutions.drawing_utils
+class HandDetector:
+    def __init__(self, mode=False, maxHands=2, detectionCon=0.5, trackCon=0.5):
+        self.mode = mode
+        self.maxHands = maxHands
+        self.detectionCon = detectionCon
+        self.trackCon = trackCon
+
+        self.mpHands = mp.solutions.hands
+        self.hands = self.mpHands.Hands(
+            self.mode, self.maxHands, self.detectionCon, self.trackCon
+        )
+        self.mpDraw = mp.solutions.drawing_utils
 
 
 imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
